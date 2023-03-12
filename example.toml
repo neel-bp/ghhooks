@@ -1,0 +1,8 @@
+[project.vvfrontend]
+
+branch = "master"
+secret = "xxx"
+cwd = "~/experiment"
+steps = [
+    "echo 'test' > test123.txt",
+]
