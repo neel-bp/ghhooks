@@ -1,4 +1,4 @@
-package deployer
+package core
 
 import (
 	"context"
@@ -101,3 +101,5 @@ func ConfigParser(fileLocation string) (Doc, error) {
 	return doc, nil
 
 }
+
+func InitiateQueues()
