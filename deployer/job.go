@@ -41,7 +41,7 @@ type ResultSyncMap struct {
 }
 
 // function that will be enqued by project specific queue
-func Job(projectName string, project Project, ctx context.Context, resultMap ResultSyncMap) error {
+func Job(projectName string, project Project, ctx context.Context, resultMap *ResultSyncMap) error {
 
 	resultMap.Mu.Lock()
 	resultMap.Map[projectName] = BuildStruct{
