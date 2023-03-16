@@ -47,6 +47,7 @@ var Queues jobqueue.QueueMap
 var ServerConf Doc
 
 // function that will be enqued by project specific queue
+// make this func fit into queue job function prototype
 func Job(projectName string, project Project, ctx context.Context, resultMap *ResultSyncMap) error {
 
 	resultMap.Mu.Lock()
