@@ -45,17 +45,19 @@ type ResultSyncMap struct {
 // GLobals
 var Queues jobqueue.QueueMap
 var ServerConf Doc
+var ResultMap *ResultSyncMap
+var Ctx context.Context
 
 // function that will be enqued by project specific queue
 // make this func fit into queue job function prototype
-func Job(projectName string, project Project, ctx context.Context, resultMap *ResultSyncMap) error {
+func Job(projectName string, project Project, ctx context.Context) error {
 
-	resultMap.Mu.Lock()
-	resultMap.Map[projectName] = BuildStruct{
+	ResultMap.Mu.Lock()
+	ResultMap.Map[projectName] = BuildStruct{
 		LastBuildStart: time.Now(),
 		StepResults:    make([]Result, 0),
 	}
-	resultMap.Mu.Unlock()
+	ResultMap.Mu.Unlock()
 
 	for _, step := range project.Steps {
 		commandsWithArgs := strings.Split(step, " ")
@@ -69,8 +71,8 @@ func Job(projectName string, project Project, ctx context.Context, resultMap *Re
 		out, err := cmd.Output()
 
 		//reporting results
-		resultMap.Mu.RLock()
-		project, ok := resultMap.Map[projectName]
+		ResultMap.Mu.RLock()
+		project, ok := ResultMap.Map[projectName]
 		if ok {
 			buildTime := project.LastBuildStart
 			steps := project.StepResults
@@ -80,15 +82,15 @@ func Job(projectName string, project Project, ctx context.Context, resultMap *Re
 					Output: string(out),
 				})
 			}
-			resultMap.Mu.RUnlock()
-			resultMap.Mu.Lock()
-			resultMap.Map[projectName] = BuildStruct{
+			ResultMap.Mu.RUnlock()
+			ResultMap.Mu.Lock()
+			ResultMap.Map[projectName] = BuildStruct{
 				LastBuildStart: buildTime,
 				StepResults:    steps,
 			}
-			resultMap.Mu.Unlock()
+			ResultMap.Mu.Unlock()
 		} else {
-			resultMap.Mu.RUnlock()
+			ResultMap.Mu.RUnlock()
 		}
 
 	}
@@ -125,5 +127,9 @@ func ServerInit(configlocation string, l *log.Logger) error {
 
 	}
 	Queues.StartAll(l)
+	ResultMap = &ResultSyncMap{
+		Map: make(map[string]BuildStruct),
+	}
+	Ctx = context.Background()
 	return nil
 }

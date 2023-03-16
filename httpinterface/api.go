@@ -16,7 +16,7 @@ import (
 // TODO: think about error stack traces probably
 // TODO: brainstorm about proxy server that will send to all the agents running on different servers
 // TODO: golang ssh client is also an option
-// TODO: create global resultmap in core package for keeping track of build results
+// DONE: create global resultmap in core package for keeping track of build results
 
 func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.WriteHeader(statusCode)
