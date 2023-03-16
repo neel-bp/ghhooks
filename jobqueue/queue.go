@@ -48,7 +48,7 @@ func (jq *JobQueue) Enqueue(job Job) bool {
 	}
 }
 
-func (jq *JobQueue) startWorker(l log.Logger) {
+func (jq *JobQueue) startWorker(l *log.Logger) {
 	for j := range jq.buffer {
 		err := j.Action(j.Args...)
 		if err != nil {
@@ -57,7 +57,7 @@ func (jq *JobQueue) startWorker(l log.Logger) {
 	}
 }
 
-func (jq *JobQueue) StartWorkers(l log.Logger) {
+func (jq *JobQueue) StartWorkers(l *log.Logger) {
 	if jq.concurrentWorkers == 0 {
 		jq.concurrentWorkers = 1
 	}
@@ -74,7 +74,7 @@ func (q *QueueMap) Register(jq *JobQueue) error {
 	return nil
 }
 
-func (q *QueueMap) StartAll(l log.Logger) {
+func (q *QueueMap) StartAll(l *log.Logger) {
 	for k := range *q {
 		(*q)[k].StartWorkers(l)
 	}

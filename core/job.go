@@ -3,11 +3,13 @@ package core
 import (
 	"context"
 	"io/ioutil"
+	"log"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
 
+	"ghhooks.com/hook/jobqueue"
 	"github.com/BurntSushi/toml"
 )
 
@@ -39,6 +41,10 @@ type ResultSyncMap struct {
 	Mu  sync.RWMutex
 	Map map[string]BuildStruct
 }
+
+// GLobals
+var Queues jobqueue.QueueMap
+var ServerConf Doc
 
 // function that will be enqued by project specific queue
 func Job(projectName string, project Project, ctx context.Context, resultMap *ResultSyncMap) error {
@@ -102,4 +108,21 @@ func ConfigParser(fileLocation string) (Doc, error) {
 
 }
 
-func InitiateQueues()
+func ServerInit(configlocation string, l *log.Logger) error {
+	conf, err := ConfigParser(configlocation)
+	if err != nil {
+		return err
+	}
+	ServerConf = conf
+	Queues = make(jobqueue.QueueMap, 0)
+	for projectName, _ := range ServerConf.Project {
+		jg := jobqueue.NewJobQueue(projectName, make(chan jobqueue.Job, 25), 1)
+		err = Queues.Register(jg)
+		if err != nil {
+			return err
+		}
+
+	}
+	Queues.StartAll(l)
+	return nil
+}
