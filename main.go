@@ -1,7 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"log"
+	"net/http"
+	"os"
+
+	"ghhooks.com/hook/core"
+	"ghhooks.com/hook/httpinterface"
+	"github.com/gorilla/mux"
+)
 
 func main() {
-	fmt.Println("baba")
+	configFileLocation := flag.String("config", "example.toml", "location of config file")
+	flag.Parse()
+
+	l := log.New(os.Stdout, "", 0)
+	err := core.ServerInit(*configFileLocation, l)
+	if err != nil {
+		log.Fatal(err)
+	}
+	r := mux.NewRouter()
+	httpinterface.RouterInit(r)
+
+	srv := &http.Server{
+		Handler: r,
+		Addr:    ":4444",
+	}
+	log.Printf("listening on %s", srv.Addr)
+	log.Fatal(srv.ListenAndServe())
 }

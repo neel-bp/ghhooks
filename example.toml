@@ -2,7 +2,7 @@
 
 branch = "master"
 secret = "xxx"
-cwd = "~/experiment"
+cwd = "/home/neelu/experiments"
 steps = [
-    "echo 'test' > test123.txt",
+    "touch test123.txt",
 ]

@@ -2,8 +2,10 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -94,6 +96,11 @@ func Job(args ...any) error {
 			ResultMap.Mu.Unlock()
 		} else {
 			ResultMap.Mu.RUnlock()
+		}
+
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			break
 		}
 
 	}
