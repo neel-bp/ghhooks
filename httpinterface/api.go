@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"ghhooks.com/hook/core"
+	"ghhooks.com/hook/jobqueue"
 	"github.com/gorilla/mux"
 )
 
@@ -73,5 +74,28 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// enqueing job
+	enqueueStatus := core.Queues.Enqueue(projectID, jobqueue.Job{
+		Name:   "build",
+		Action: core.Job,
+		Args: []any{
+			projectID,
+			project,
+		},
+	})
+	if !enqueueStatus {
+		Respond(
+			w, 429, map[string]interface{}{
+				"error": "build queue is full",
+			},
+		)
+		return
+	}
+	Respond(w, 200, map[string]interface{}{
+		"message": "build queued successfully",
+	})
+}
 
+func RouterInit(r *mux.Router) {
+	r.HandleFunc("/{project}", WebHookListener).Methods("POST")
+	r.HandleFunc("/{project}/", WebHookListener).Methods("POST")
 }

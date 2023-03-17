@@ -49,8 +49,10 @@ var ResultMap *ResultSyncMap
 var Ctx context.Context
 
 // function that will be enqued by project specific queue
-// make this func fit into queue job function prototype
-func Job(projectName string, project Project, ctx context.Context) error {
+// DONE: make this func fit into queue job function prototype
+func Job(args ...any) error {
+	projectName := args[0].(string)
+	project := args[1].(Project)
 
 	ResultMap.Mu.Lock()
 	ResultMap.Map[projectName] = BuildStruct{
@@ -66,7 +68,8 @@ func Job(projectName string, project Project, ctx context.Context) error {
 		if len(commandsWithArgs) > 1 {
 			args = commandsWithArgs[1:]
 		}
-		cmd := exec.CommandContext(ctx, command, args...)
+		//TODO: create context with deadline from global context
+		cmd := exec.CommandContext(Ctx, command, args...)
 		cmd.Dir = project.Cwd
 		out, err := cmd.Output()
 
