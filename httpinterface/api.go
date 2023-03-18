@@ -15,9 +15,10 @@ import (
 // TODO: to add or not to add logger
 // TODO: log with levels and cli flags
 // TODO: think about error stack traces probably
-// TODO: brainstorm about proxy server that will send to all the agents running on different servers
+// TODO: brainstorm about proxy server that will send to all the agents running on different servers (woold need CORS)
 // TODO: golang ssh client is also an option
 // DONE: create global resultmap in core package for keeping track of build results
+// TODO: status route
 
 func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.WriteHeader(statusCode)
