@@ -140,8 +140,8 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Respond(w, 200, map[string]interface{}{
-		"buildResult":      result,
-		"completionStatus": fmt.Sprintf("%v%%", (successfullSteps*100)/totalSteps),
+		"buildResult": result,
+		"coverage":    fmt.Sprintf("%v%%", (successfullSteps*100)/totalSteps),
 	})
 
 }
