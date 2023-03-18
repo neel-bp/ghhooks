@@ -123,7 +123,7 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	core.ResultMap.Mu.RLock()
 	result, ok := core.ResultMap.Map[projectID]
-	core.ResultMap.Mu.Unlock()
+	core.ResultMap.Mu.RUnlock()
 	if !ok {
 		Respond(w, http.StatusBadGateway, map[string]interface{}{
 			"error": "no build have been run yet, or nothing to report on the project",
