@@ -54,6 +54,7 @@ var Ctx context.Context
 // DONE: make this func fit into queue job function prototype
 // TODO: configurable shell
 // TODO: configurable per command timeout
+// TODO: along with error object add error description too (err.Error())
 func Job(args ...any) error {
 	projectName := args[0].(string)
 	project := args[1].(Project)
@@ -82,16 +83,16 @@ func Job(args ...any) error {
 		//reporting results
 		ResultMap.Mu.RLock()
 		project, ok := ResultMap.Map[projectName]
+		ResultMap.Mu.RUnlock()
 		if ok {
 			buildTime := project.LastBuildStart
 			steps := project.StepResults
-			if len(steps) > 0 {
-				steps = append(steps, Result{
-					Error:  err,
-					Output: string(out),
-				})
-			}
-			ResultMap.Mu.RUnlock()
+
+			steps = append(steps, Result{
+				Error:  err,
+				Output: string(out),
+			})
+
 			ResultMap.Mu.Lock()
 			ResultMap.Map[projectName] = BuildStruct{
 				LastBuildStart: buildTime,

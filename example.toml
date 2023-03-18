@@ -5,4 +5,5 @@ secret = "xxx"
 cwd = "/home/neelu/experiments"
 steps = [
     "touch test123.txt",
+    "echo 'babayaga'"
 ]
