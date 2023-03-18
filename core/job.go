@@ -30,20 +30,28 @@ type Project struct {
 // result processing is only started after a job has been started
 
 type Result struct {
-	Error       error
-	Output      string
-	Description string
+	Error       error  `json:"error"`
+	Output      string `json:"output"`
+	Description string `json:"description"`
 }
 
+// DONE: build status
 type BuildStruct struct {
-	LastBuildStart time.Time
-	StepResults    []Result
+	LastBuildStart time.Time `json:"lastBuildStart"`
+	StepResults    []Result  `json:"stepResults"`
+	BuildStatus    string    `json:"buildStatus"`
 }
 
 type ResultSyncMap struct {
 	Mu  sync.RWMutex
 	Map map[string]BuildStruct
 }
+
+const (
+	PENDING string = "pending"
+	FAILED  string = "failed"
+	SUCCESS string = "success"
+)
 
 // GLobals
 var Queues jobqueue.QueueMap
@@ -64,6 +72,7 @@ func Job(args ...any) error {
 	ResultMap.Map[projectName] = BuildStruct{
 		LastBuildStart: time.Now(),
 		StepResults:    make([]Result, 0),
+		BuildStatus:    PENDING,
 	}
 	ResultMap.Mu.Unlock()
 
@@ -110,9 +119,24 @@ func Job(args ...any) error {
 
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
+			ResultMap.Mu.RLock()
+			obj := ResultMap.Map[projectName]
+			ResultMap.Mu.RUnlock()
+			obj.BuildStatus = FAILED
+			ResultMap.Mu.Lock()
+			ResultMap.Map[projectName] = obj
+			ResultMap.Mu.Unlock()
 			break
 		}
-
+	}
+	ResultMap.Mu.RLock()
+	obj := ResultMap.Map[projectName]
+	ResultMap.Mu.RUnlock()
+	if obj.BuildStatus != FAILED {
+		obj.BuildStatus = SUCCESS
+		ResultMap.Mu.Lock()
+		ResultMap.Map[projectName] = obj
+		ResultMap.Mu.Unlock()
 	}
 	return nil
 }

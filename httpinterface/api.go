@@ -131,9 +131,17 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	var successfullSteps int
+	for _, v := range result.StepResults {
+		if v.Error == nil {
+			successfullSteps = successfullSteps + 1
+		}
+	}
+
 	Respond(w, 200, map[string]interface{}{
 		"buildResult":      result,
-		"completionStatus": fmt.Sprintf("%v%%", (len(result.StepResults)*100)/totalSteps),
+		"completionStatus": fmt.Sprintf("%v%%", (successfullSteps*100)/totalSteps),
 	})
 
 }
