@@ -19,6 +19,7 @@ import (
 // TODO: golang ssh client is also an option
 // DONE: create global resultmap in core package for keeping track of build results
 // TODO: status route
+// TODO: github commit status
 
 func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.WriteHeader(statusCode)
@@ -91,12 +92,54 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	Respond(w, 200, map[string]interface{}{
+	Respond(w, 201, map[string]interface{}{
 		"message": "build queued successfully",
 	})
+}
+
+func BuildStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	projectID, ok := vars["project"]
+	if !ok {
+		Respond(w, 400, map[string]interface{}{
+			"error": "no vars found",
+		})
+		return
+	}
+	project, ok := core.ServerConf.Project[projectID]
+	if !ok {
+		Respond(w, 400, map[string]interface{}{
+			"error": "no project found with given project name",
+		})
+		return
+	}
+
+	totalSteps := len(project.Steps)
+	if totalSteps == 0 {
+		Respond(w, http.StatusBadGateway, map[string]interface{}{
+			"error": "no build steps configured",
+		})
+		return
+	}
+	core.ResultMap.Mu.RLock()
+	result, ok := core.ResultMap.Map[projectID]
+	core.ResultMap.Mu.Unlock()
+	if !ok {
+		Respond(w, http.StatusBadGateway, map[string]interface{}{
+			"error": "no build have been run yet, or nothing to report on the project",
+		})
+		return
+	}
+	Respond(w, 200, map[string]interface{}{
+		"buildResult":      result,
+		"completionStatus": (len(result.StepResults) * 100) / totalSteps,
+	})
+
 }
 
 func RouterInit(r *mux.Router) {
 	r.HandleFunc("/{project}", WebHookListener).Methods("POST")
 	r.HandleFunc("/{project}/", WebHookListener).Methods("POST")
+	r.HandleFunc("/{project}/status", BuildStatus).Methods("GET")
+	r.HandleFunc("/{project}/status/", BuildStatus).Methods("GET")
 }
