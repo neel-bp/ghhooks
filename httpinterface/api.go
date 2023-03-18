@@ -2,6 +2,7 @@ package httpinterface
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -116,7 +117,7 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 
 	totalSteps := len(project.Steps)
 	if totalSteps == 0 {
-		Respond(w, http.StatusBadGateway, map[string]interface{}{
+		Respond(w, http.StatusBadRequest, map[string]interface{}{
 			"error": "no build steps configured",
 		})
 		return
@@ -125,14 +126,14 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 	result, ok := core.ResultMap.Map[projectID]
 	core.ResultMap.Mu.RUnlock()
 	if !ok {
-		Respond(w, http.StatusBadGateway, map[string]interface{}{
+		Respond(w, http.StatusBadRequest, map[string]interface{}{
 			"error": "no build have been run yet, or nothing to report on the project",
 		})
 		return
 	}
 	Respond(w, 200, map[string]interface{}{
 		"buildResult":      result,
-		"completionStatus": (len(result.StepResults) * 100) / totalSteps,
+		"completionStatus": fmt.Sprintf("%v%%", (len(result.StepResults)*100)/totalSteps),
 	})
 
 }

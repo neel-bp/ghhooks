@@ -30,8 +30,9 @@ type Project struct {
 // result processing is only started after a job has been started
 
 type Result struct {
-	Error  error
-	Output string
+	Error       error
+	Output      string
+	Description string
 }
 
 type BuildStruct struct {
@@ -54,7 +55,7 @@ var Ctx context.Context
 // DONE: make this func fit into queue job function prototype
 // TODO: configurable shell
 // TODO: configurable per command timeout
-// TODO: along with error object add error description too (err.Error())
+// DONE: along with error object add error description too (err.Error())
 func Job(args ...any) error {
 	projectName := args[0].(string)
 	project := args[1].(Project)
@@ -87,10 +88,14 @@ func Job(args ...any) error {
 		if ok {
 			buildTime := project.LastBuildStart
 			steps := project.StepResults
-
+			description := "step ran successfully"
+			if err != nil {
+				description = err.Error()
+			}
 			steps = append(steps, Result{
-				Error:  err,
-				Output: string(out),
+				Error:       err,
+				Output:      string(out),
+				Description: description,
 			})
 
 			ResultMap.Mu.Lock()
