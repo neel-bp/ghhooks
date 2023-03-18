@@ -18,7 +18,7 @@ import (
 // TODO: brainstorm about proxy server that will send to all the agents running on different servers (woold need CORS)
 // TODO: golang ssh client is also an option
 // DONE: create global resultmap in core package for keeping track of build results
-// TODO: status route
+// DONE: status route
 // TODO: github commit status
 
 func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
