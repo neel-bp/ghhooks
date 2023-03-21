@@ -63,6 +63,7 @@ var Ctx context.Context
 // DONE: make this func fit into queue job function prototype
 // TODO: configurable shell
 // TODO: configurable per command timeout
+// TODO: multiserver install scripts (like ansible playbook) using golang ssh client
 // DONE: along with error object add error description too (err.Error())
 func Job(args ...any) error {
 	projectName := args[0].(string)

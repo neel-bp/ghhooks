@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//TODO: flag to control if github commit badge should be updated or not
 func main() {
 	configFileLocation := flag.String("config", "example.toml", "location of config file")
 	flag.Parse()

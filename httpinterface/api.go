@@ -21,6 +21,7 @@ import (
 // DONE: create global resultmap in core package for keeping track of build results
 // DONE: status route
 // TODO: github commit status
+// TODO: blocking status report
 
 func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.WriteHeader(statusCode)
