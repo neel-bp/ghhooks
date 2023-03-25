@@ -37,7 +37,7 @@ type Result struct {
 }
 
 // DONE: build status
-type BuildStruct struct {
+type JobState struct {
 	LastBuildStart time.Time `json:"lastBuildStart"`
 	StepResults    []Result  `json:"stepResults"`
 	BuildStatus    string    `json:"buildStatus"`
@@ -45,7 +45,7 @@ type BuildStruct struct {
 
 type ResultSyncMap struct {
 	Mu  sync.RWMutex
-	Map map[string]BuildStruct
+	Map map[string]JobState
 }
 
 const (
@@ -66,12 +66,13 @@ var Ctx context.Context
 // DONE: configurable per command timeout
 // TODO: multiserver install scripts (like ansible playbook) using golang ssh client
 // DONE: along with error object add error description too (err.Error())
+// TODO: cancel running job
 func Job(args ...any) error {
 	projectName := args[0].(string)
 	project := args[1].(Project)
 
 	ResultMap.Mu.Lock()
-	ResultMap.Map[projectName] = BuildStruct{
+	ResultMap.Map[projectName] = JobState{
 		LastBuildStart: time.Now(),
 		StepResults:    make([]Result, 0),
 		BuildStatus:    PENDING,
@@ -114,7 +115,7 @@ func Job(args ...any) error {
 			})
 
 			ResultMap.Mu.Lock()
-			ResultMap.Map[projectName] = BuildStruct{
+			ResultMap.Map[projectName] = JobState{
 				LastBuildStart: buildTime,
 				StepResults:    steps,
 			}
@@ -178,7 +179,7 @@ func ServerInit(configlocation string, l *log.Logger) error {
 	}
 	Queues.StartAll(l)
 	ResultMap = &ResultSyncMap{
-		Map: make(map[string]BuildStruct),
+		Map: make(map[string]JobState),
 	}
 	Ctx = context.Background()
 	return nil
