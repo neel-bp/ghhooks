@@ -22,6 +22,8 @@ import (
 // DONE: status route
 // TODO: github commit status
 // TODO: blocking build run
+// TODO: html page for status
+// TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
 
 func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.WriteHeader(statusCode)

@@ -66,7 +66,7 @@ var Ctx context.Context
 // DONE: configurable per command timeout
 // TODO: multiserver install scripts (like ansible playbook) using golang ssh client
 // DONE: along with error object add error description too (err.Error())
-// TODO: cancel running job
+// TODO: cancel running build
 func Job(args ...any) error {
 	projectName := args[0].(string)
 	project := args[1].(Project)
