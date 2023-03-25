@@ -16,14 +16,15 @@ import (
 )
 
 type Doc struct {
-	Project map[string]Project
+	Project map[string]Project `toml:"project"`
 }
 
 type Project struct {
-	Branch string
-	Secret string
-	Cwd    string
-	Steps  []string
+	Branch      string   `toml:"branch"`
+	Secret      string   `toml:"secret"`
+	Cwd         string   `toml:"cwd"`
+	Steps       []string `toml:"steps"`
+	StepTimeout int      `toml:"stepTimeout"`
 }
 
 // result processing is local to individual job
@@ -62,7 +63,7 @@ var Ctx context.Context
 // function that will be enqued by project specific queue
 // DONE: make this func fit into queue job function prototype
 // TODO: configurable shell
-// TODO: configurable per command timeout
+// DONE: configurable per command timeout
 // TODO: multiserver install scripts (like ansible playbook) using golang ssh client
 // DONE: along with error object add error description too (err.Error())
 func Job(args ...any) error {
@@ -85,7 +86,11 @@ func Job(args ...any) error {
 			args = commandsWithArgs[1:]
 		}
 		//DONE: create context with deadline from global context
-		ctx, cancel := context.WithTimeout(Ctx, time.Minute*10)
+		duration := 10 * time.Minute
+		if project.StepTimeout != 0 {
+			duration = time.Duration(project.StepTimeout) * time.Second
+		}
+		ctx, cancel := context.WithTimeout(Ctx, duration)
 		cmd := exec.CommandContext(ctx, command, args...)
 		cmd.Dir = project.Cwd
 		out, err := cmd.Output()

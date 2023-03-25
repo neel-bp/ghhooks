@@ -7,3 +7,4 @@ steps = [
     "touch test123.txt",
     "echo 'babayaga'"
 ]
+stepTimeout = 600
