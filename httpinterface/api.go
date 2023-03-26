@@ -49,27 +49,26 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := make(map[string]interface{}, 0)
+	var payload WebhookPayload
 	decoder := json.NewDecoder(r.Body)
-	decoder.Decode(&payload)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		Respond(w, 400, map[string]any{
+			"error": err.Error(),
+		})
+		return
+	}
 
 	// check out sample github webhook for details
-	ref, ok := payload["ref"]
-	if !ok {
+
+	if payload.Ref == "" {
 		Respond(w, 400, map[string]interface{}{
 			"error": "invalid payload: cannot find ref inside given payload",
 		})
 		return
 	}
-	refString, ok := ref.(string)
-	if !ok {
-		Respond(w, 400, map[string]interface{}{
-			"error": "type of ref is not string",
-		})
-		return
-	}
 
-	branchStringArr := strings.Split(refString, "/")
+	branchStringArr := strings.Split(payload.Ref, "/")
 	branchString := branchStringArr[len(branchStringArr)-1]
 
 	if project.Branch != branchString {
