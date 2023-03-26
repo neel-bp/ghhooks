@@ -8,6 +8,7 @@ import (
 
 	"ghhooks.com/hook/core"
 	"ghhooks.com/hook/httpinterface"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -23,9 +24,10 @@ func main() {
 	}
 	r := mux.NewRouter()
 	httpinterface.RouterInit(r)
+	loggedHandler := handlers.LoggingHandler(os.Stdout, r)
 
 	srv := &http.Server{
-		Handler: r,
+		Handler: loggedHandler,
 		Addr:    ":4444",
 	}
 	log.Printf("listening on %s", srv.Addr)

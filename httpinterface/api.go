@@ -13,7 +13,6 @@ import (
 
 // DONE: verify signature before accepting webhook
 // DONE: verify if branch is correct
-// TODO: to add or not to add logger
 // TODO: log with levels and cli flags
 // TODO: think about error stack traces probably
 // TODO: brainstorm about proxy server that will send to all the agents running on different servers (woold need CORS)
