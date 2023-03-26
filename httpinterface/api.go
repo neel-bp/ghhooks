@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TODO: verify signature before accepting webhook
+// DONE: verify signature before accepting webhook
 // DONE: verify if branch is correct
 // TODO: to add or not to add logger
 // TODO: log with levels and cli flags
@@ -24,12 +24,6 @@ import (
 // TODO: blocking build run
 // TODO: html page for status
 // TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
-
-func Respond(w http.ResponseWriter, statusCode int, v interface{}) {
-	w.WriteHeader(statusCode)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(v)
-}
 
 func WebHookListener(w http.ResponseWriter, r *http.Request) {
 
@@ -49,17 +43,39 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bodyInBytes, err := StreamToByte(r.Body)
+	if err != nil {
+		Respond(w, 400, map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	hash := r.Header.Get("X-Hub-Signature-256")
+	if hash != "" {
+		verified, err := VerifySignature(bodyInBytes, hash, project.Secret)
+		if err != nil {
+			Respond(w, 500, map[string]any{
+				"error": err.Error(),
+			})
+			return
+		}
+		if !verified {
+			Respond(w, 412, map[string]any{
+				"error": "signauture could not be verified",
+			})
+			return
+		}
+	}
+
 	var payload WebhookPayload
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&payload)
+	err = json.Unmarshal(bodyInBytes, &payload)
 	if err != nil {
 		Respond(w, 400, map[string]any{
 			"error": err.Error(),
 		})
 		return
 	}
-
-	// check out sample github webhook for details
 
 	if payload.Ref == "" {
 		Respond(w, 400, map[string]interface{}{
