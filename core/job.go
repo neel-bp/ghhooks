@@ -86,7 +86,10 @@ func Job(args ...any) error {
 		}
 
 		command := step[0]
-		args := step[1:]
+		var args []string
+		if len(step) > 1 {
+			args = step[1:]
+		}
 
 		//DONE: create context with deadline from global context
 		duration := 10 * time.Minute
