@@ -12,7 +12,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//TODO: flag to control if github commit badge should be updated or not
+// TODO: flag to control if github commit badge should be updated or not
+// TODO: gracefull shutdown that waits for server to shutdown and also waits for current build to finish
 func main() {
 	configFileLocation := flag.String("config", "example.toml", "location of config file")
 	httpLogger := flag.Bool("httplog", true, "log http requests (webhook push event and status request)")
@@ -31,7 +32,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Handler: handler,
+		Handler: handler,srv.S
 		Addr:    ":4444",
 	}
 	log.Printf("listening on %s", srv.Addr)
