@@ -32,7 +32,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Handler: handler,srv.S
+		Handler: handler,
 		Addr:    ":4444",
 	}
 	log.Printf("listening on %s", srv.Addr)
