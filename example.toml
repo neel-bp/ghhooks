@@ -4,6 +4,7 @@ branch = "master"
 secret = "xxx"
 cwd = "/home/neelu/experiments"
 steps = [
-    "echo 'babayaga'"
+    ["echo","babayaga"],
+    ["echo","asdzxc"]
 ]
 stepTimeout = 600

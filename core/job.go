@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
@@ -20,11 +19,11 @@ type Doc struct {
 }
 
 type Project struct {
-	Branch      string   `toml:"branch"`
-	Secret      string   `toml:"secret"`
-	Cwd         string   `toml:"cwd"`
-	Steps       []string `toml:"steps"`
-	StepTimeout int      `toml:"stepTimeout"`
+	Branch      string     `toml:"branch"`
+	Secret      string     `toml:"secret"`
+	Cwd         string     `toml:"cwd"`
+	Steps       [][]string `toml:"steps"`
+	StepTimeout int        `toml:"stepTimeout"`
 }
 
 // result processing is local to individual job
@@ -80,12 +79,15 @@ func Job(args ...any) error {
 	ResultMap.Mu.Unlock()
 
 	for _, step := range project.Steps {
-		commandsWithArgs := strings.Split(step, " ")
-		command := commandsWithArgs[0]
-		var args []string
-		if len(commandsWithArgs) > 1 {
-			args = commandsWithArgs[1:]
+
+		if len(step) == 0 {
+			fmt.Fprintln(os.Stderr, "empty step")
+			continue
 		}
+
+		command := step[0]
+		args := step[1:]
+
 		//DONE: create context with deadline from global context
 		duration := 10 * time.Minute
 		if project.StepTimeout != 0 {
