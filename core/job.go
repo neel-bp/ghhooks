@@ -40,7 +40,7 @@ type JobState struct {
 	LastBuildStart time.Time `json:"lastBuildStart"`
 	StepResults    []Result  `json:"stepResults"`
 	BuildStatus    string    `json:"buildStatus"`
-	Coverage       float64   `json:"string"`
+	Coverage       float64   `json:"coverage"`
 }
 
 type StatusResponse struct {
