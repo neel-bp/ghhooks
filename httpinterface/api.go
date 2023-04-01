@@ -2,9 +2,10 @@ package httpinterface
 
 import (
 	"encoding/json"
-	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"ghhooks.com/hook/core"
 	"ghhooks.com/hook/jobqueue"
@@ -21,7 +22,7 @@ import (
 // DONE: status route
 // TODO: github commit status
 // TODO: blocking build run
-// TODO: html page for status
+// DONE: html page for status
 // TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
 
 func WebHookListener(w http.ResponseWriter, r *http.Request) {
@@ -156,10 +157,23 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	Respond(w, 200, map[string]interface{}{
-		"buildResult": result,
-		"coverage":    fmt.Sprintf("%v%%", (successfullSteps*100)/totalSteps),
-	})
+	result.Coverage = float64(successfullSteps * 100 / totalSteps)
+
+	format := r.URL.Query().Get("format")
+
+	if format == "json" {
+		Respond(w, 200, result)
+		return
+	}
+
+	templateResponse := core.StatusResponse{
+		JobState:       result,
+		ProjectName:    projectID,
+		DateTimeString: result.LastBuildStart.Format(time.RFC3339),
+	}
+
+	tmpl := template.Must(template.ParseFiles("statuspage.html"))
+	tmpl.Execute(w, templateResponse)
 
 }
 

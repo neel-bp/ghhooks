@@ -40,6 +40,13 @@ type JobState struct {
 	LastBuildStart time.Time `json:"lastBuildStart"`
 	StepResults    []Result  `json:"stepResults"`
 	BuildStatus    string    `json:"buildStatus"`
+	Coverage       float64   `json:"string"`
+}
+
+type StatusResponse struct {
+	JobState
+	ProjectName    string `json:"projectName"`
+	DateTimeString string `json:"dateTimeString"`
 }
 
 type ResultSyncMap struct {
@@ -72,7 +79,7 @@ func Job(args ...any) error {
 
 	ResultMap.Mu.Lock()
 	ResultMap.Map[projectName] = JobState{
-		LastBuildStart: time.Now(),
+		LastBuildStart: time.Now().UTC(),
 		StepResults:    make([]Result, 0),
 		BuildStatus:    PENDING,
 	}

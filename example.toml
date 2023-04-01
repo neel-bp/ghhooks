@@ -2,9 +2,8 @@
 
 branch = "master"
 secret = "xxx"
-cwd = "/home/neelu/experiments"
+cwd = 'c:\games'
 steps = [
-    ["echo","babayaga"],
-    ["echo","asdzxc"]
+    ["git","--help"],
 ]
 stepTimeout = 600

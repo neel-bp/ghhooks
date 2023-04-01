@@ -1,46 +1,83 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Build status</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
-    />
-  </head>
-  <body>
-    <section class="section">
-      <div class="container">
-        <div class="box has-text-centered neelu-box">
-          <h1 class="title">Build</h1>
-        </div>
-        <div class="columns is-centered">
-          <div class="column is-half">
-            <progress class="progress is-large" value="45" max="100">
-              45%
-            </progress>
-          </div>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{.ProjectName}} Build status</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <div class="box has-text-centered neelu-box">
+        <h1 class="title is-1">Build Status</h1>
+        <h3 class="subtitle is-5" id="lastBuildStart">{{.DateTimeString}}</h3>
+        <p class="subtitle">{{.BuildStatus}}
+          <br>{{.Coverage}}%
+        </p>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-two-thirds">
+          <progress class="progress is-large" value="{{.Coverage}}" max="100">
+            {{.Coverage}}%
+          </progress>
         </div>
       </div>
-    </section>
-  </body>
+    </div>
+  </section>
+</body>
 
-  <style>
-    .neelu-box {
-      border-style: solid;
-      border-width: 2px;
-      border-color: #4a4a4a;
-      border-radius: 0px;
-    }
+<style>
+  .neelu-box {
+    border-style: solid;
+    border-width: 2px;
+    border-color: #4a4a4a;
+    border-radius: 0px;
+  }
 
-    .progress {
-      padding: 4px;
-      border-radius: 0px;
-      border-style: solid;
-      border-color: #4a4a4a;
-      border-width: 1px;
-      width: 100%;
+  .progress {
+    padding: 4px;
+    border-radius: 0px;
+    border-style: solid;
+    border-color: #4a4a4a;
+    border-width: 1px;
+    width: 100%;
+  }
+</style>
+
+<script>
+  function formatAMPM(dateString) {
+    let date = new Date(dateString);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    
+    var month = date.getMonth();
+    var day = date.getDay();
+    var year = date.getFullYear();
+    if(month <= 9) {
+      month = "0"+month.toString();
     }
-  </style>
+    if(day <= 9) {
+      day = "0"+day.toString();
+    }
+    
+    var strTime = year + "-"+ month + "-" + day +" "+ hours + ':' + minutes + ' ' + ampm;
+    return strTime;
+  }
+
+  var lastBuildStart = document.getElementById("lastBuildStart");
+  var time = formatAMPM(lastBuildStart.innerHTML);
+
+  lastBuildStart.innerHTML = time;
+
+  
+
+</script>
+
 </html>
