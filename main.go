@@ -17,6 +17,7 @@ import (
 func main() {
 	configFileLocation := flag.String("config", "example.toml", "location of config file")
 	httpLogger := flag.Bool("httplog", true, "log http requests (webhook push event and status request)")
+	addr := flag.String("addr", ":4444", "address/port pair")
 	flag.Parse()
 
 	l := log.New(os.Stdout, "", 0)
@@ -33,7 +34,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler: handler,
-		Addr:    ":4444",
+		Addr:    *addr,
 	}
 	log.Printf("listening on %s", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
