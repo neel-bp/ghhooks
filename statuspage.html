@@ -57,8 +57,8 @@
     hours = hours ? hours : 12; // the hour '0' should be '12'
     minutes = minutes < 10 ? '0' + minutes : minutes;
     
-    var month = date.getMonth();
-    var day = date.getDay();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
     var year = date.getFullYear();
     if(month <= 9) {
       month = "0"+month.toString();
