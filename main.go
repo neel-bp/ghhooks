@@ -67,6 +67,6 @@ func main() {
 	wg.Wait()
 	<-httpServerCloseChan
 
-	fmt.Println("gracefully shutting down")
+	fmt.Println("done")
 
 }
