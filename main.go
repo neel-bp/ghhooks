@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"sync"
-	"syscall"
 
 	"ghhooks.com/hook/core"
 	"ghhooks.com/hook/httpinterface"
@@ -19,6 +18,13 @@ import (
 
 // TODO: flag to control if github commit badge should be updated or not
 // TODO: gracefull shutdown that waits for server to shutdown and also waits for current build to finish
+//===========
+// NOTE: CURRENT FINDINGS about graceful shutdown
+// what i want is, whenever sigint signal is sent, it should drain all queued jobs but let the current processing
+// job continue instead it along with draining ends the current goroutine even though i am listening for sigint signal
+// to test it, use drainall function without sigint signal and it will work fine alternatively, comment draining of channel in drain function
+// it will exit the current process and start another job in queue immediately
+//===========
 func main() {
 	configFileLocation := flag.String("config", "example.toml", "location of config file")
 	httpLogger := flag.Bool("httplog", true, "log http requests (webhook push event and status request)")
@@ -49,23 +55,24 @@ func main() {
 	httpServerCloseChan := make(chan struct{})
 	go func() {
 		sigc := make(chan os.Signal, 1)
-		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(sigc, os.Interrupt)
 		<-sigc
 		fmt.Println("gracefully shutting down")
-		core.Queues.DrainAll()
+		// core.Queues.DrainAll()
 
 		if err := srv.Shutdown(context.Background()); err != nil {
 			l.Printf("HTTP server shurdown error: %v\n", err)
 		}
-		close(httpServerCloseChan)
+		httpServerCloseChan <- struct{}{}
 	}()
 
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		l.Fatalf("http server listen and serve error %v\n", err)
 	}
 
-	wg.Wait()
 	<-httpServerCloseChan
+	core.Queues.DrainAll()
+	wg.Wait()
 
 	fmt.Println("done")
 
