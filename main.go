@@ -51,6 +51,7 @@ func main() {
 		sigc := make(chan os.Signal, 2)
 		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
 		<-sigc
+		fmt.Println("gracefully shutting down")
 		core.Queues.DrainAll()
 
 		if err := srv.Shutdown(context.Background()); err != nil {
