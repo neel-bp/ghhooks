@@ -55,6 +55,7 @@ func (jq *JobQueue) startWorker(l *log.Logger, wg *sync.WaitGroup) {
 		if err != nil {
 			l.Println(err)
 		}
+		l.Println("job done")
 	}
 	wg.Done()
 }

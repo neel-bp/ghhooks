@@ -116,6 +116,7 @@ func Job(args ...any) error {
 		if ok {
 			buildTime := project.LastBuildStart
 			steps := project.StepResults
+			status := project.BuildStatus
 			description := "step ran successfully"
 			if err != nil {
 				description = err.Error()
@@ -130,6 +131,7 @@ func Job(args ...any) error {
 			ResultMap.Map[projectName] = JobState{
 				LastBuildStart: buildTime,
 				StepResults:    steps,
+				BuildStatus:    status,
 			}
 			ResultMap.Mu.Unlock()
 		} else {

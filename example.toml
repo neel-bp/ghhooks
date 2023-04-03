@@ -2,8 +2,12 @@
 
 branch = "master"
 secret = "xxx"
-cwd = 'c:\games'
+cwd = '/home/neelu/work'
 steps = [
-    ["git","--help"],
+    ["echo","start"],
+    ["sleep","2"],
+    ["echo","mid"],
+    ["sleep","3"],
+    ["echo","end"]
 ]
 stepTimeout = 600
