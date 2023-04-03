@@ -48,7 +48,7 @@ func main() {
 	// queue drain drains all jobs in queue, but lets the job that is currently underway process without interruption
 	httpServerCloseChan := make(chan struct{})
 	go func() {
-		sigc := make(chan os.Signal, 2)
+		sigc := make(chan os.Signal, 1)
 		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
 		<-sigc
 		fmt.Println("gracefully shutting down")

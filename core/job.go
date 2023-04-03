@@ -148,6 +148,8 @@ func Job(args ...any) error {
 			ResultMap.Map[projectName] = obj
 			ResultMap.Mu.Unlock()
 			break
+		} else {
+			fmt.Printf("step %v done\n", step)
 		}
 	}
 	ResultMap.Mu.RLock()
