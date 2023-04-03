@@ -174,7 +174,7 @@ func ConfigParser(fileLocation string) (Doc, error) {
 
 }
 
-func ServerInit(configlocation string, l *log.Logger) error {
+func ServerInit(configlocation string, l *log.Logger, wg *sync.WaitGroup) error {
 	conf, err := ConfigParser(configlocation)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func ServerInit(configlocation string, l *log.Logger) error {
 		}
 
 	}
-	Queues.StartAll(l)
+	Queues.StartAll(l, wg)
 	ResultMap = &ResultSyncMap{
 		Map: make(map[string]JobState),
 	}

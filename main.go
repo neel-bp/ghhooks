@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"ghhooks.com/hook/core"
 	"ghhooks.com/hook/httpinterface"
@@ -21,7 +26,8 @@ func main() {
 	flag.Parse()
 
 	l := log.New(os.Stdout, "", 0)
-	err := core.ServerInit(*configFileLocation, l)
+	var wg sync.WaitGroup
+	err := core.ServerInit(*configFileLocation, l, &wg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,5 +43,28 @@ func main() {
 		Addr:    *addr,
 	}
 	log.Printf("listening on %s", srv.Addr)
-	log.Fatal(srv.ListenAndServe())
+	// log.Fatal(srv.ListenAndServe())
+
+	// queue drain drains all jobs in queue, but lets the job that is currently underway process without interruption
+	httpServerCloseChan := make(chan struct{})
+	go func() {
+		sigc := make(chan os.Signal, 2)
+		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
+		<-sigc
+		core.Queues.DrainAll()
+
+		if err := srv.Shutdown(context.Background()); err != nil {
+			l.Printf("HTTP server shurdown error: %v\n", err)
+		}
+		close(httpServerCloseChan)
+	}()
+
+	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		l.Fatalf("http server listen and serve error %v\n", err)
+	}
+
+	<-httpServerCloseChan
+
+	fmt.Println("gracefully shutting down")
+
 }
