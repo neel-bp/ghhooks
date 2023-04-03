@@ -64,6 +64,7 @@ func main() {
 		l.Fatalf("http server listen and serve error %v\n", err)
 	}
 
+	wg.Wait()
 	<-httpServerCloseChan
 
 	fmt.Println("gracefully shutting down")
