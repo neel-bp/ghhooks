@@ -28,6 +28,13 @@ import (
 // THE problem was the sigint was being passed to commands that were started by go,
 // even if I was catching the signal it was being passed to other processes too, which was cancelling the current running command
 //===========
+
+const INIT = `
+┌─┐┬ ┬┬ ┬┌─┐┌─┐┬┌─┌─┐
+│ ┬├─┤├─┤│ ││ │├┴┐└─┐
+└─┘┴ ┴┴ ┴└─┘└─┘┴ ┴└─┘
+`
+
 func main() {
 	configFileLocation := flag.String("config", "example.toml", "location of config file")
 	httpLogger := flag.Bool("httplog", true, "log http requests (webhook push event and status request)")
@@ -51,6 +58,7 @@ func main() {
 		Handler: handler,
 		Addr:    *addr,
 	}
+	fmt.Print(INIT)
 	log.Printf("listening on %s", srv.Addr)
 	// log.Fatal(srv.ListenAndServe())
 
