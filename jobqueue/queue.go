@@ -3,6 +3,7 @@ package jobqueue
 import (
 	"errors"
 	"log"
+	"sync"
 )
 
 // TODO: write closing of queues with graceful shutdown
@@ -48,21 +49,31 @@ func (jq *JobQueue) Enqueue(job Job) bool {
 	}
 }
 
-func (jq *JobQueue) startWorker(l *log.Logger) {
+func (jq *JobQueue) startWorker(l *log.Logger, wg *sync.WaitGroup) {
 	for j := range jq.buffer {
 		err := j.Action(j.Args...)
 		if err != nil {
 			l.Println(err)
 		}
+		l.Println("job done")
 	}
+	wg.Done()
 }
 
-func (jq *JobQueue) StartWorkers(l *log.Logger) {
+func (jq *JobQueue) StartWorkers(l *log.Logger, wg *sync.WaitGroup) {
 	if jq.concurrentWorkers == 0 {
 		jq.concurrentWorkers = 1
 	}
 	for i := 0; i < int(jq.concurrentWorkers); i++ {
-		go jq.startWorker(l)
+		wg.Add(1)
+		go jq.startWorker(l, wg)
+	}
+}
+
+func (jg *JobQueue) Drain() {
+	close(jg.buffer)
+	for len(jg.buffer) > 0 {
+		<-jg.buffer
 	}
 }
 
@@ -74,9 +85,15 @@ func (q *QueueMap) Register(jq *JobQueue) error {
 	return nil
 }
 
-func (q *QueueMap) StartAll(l *log.Logger) {
+func (q *QueueMap) StartAll(l *log.Logger, wg *sync.WaitGroup) {
 	for k := range *q {
-		(*q)[k].StartWorkers(l)
+		(*q)[k].StartWorkers(l, wg)
+	}
+}
+
+func (q *QueueMap) DrainAll() {
+	for k := range *q {
+		(*q)[k].Drain()
 	}
 }
 

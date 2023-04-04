@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"syscall"
 	"time"
 
 	"ghhooks.com/hook/jobqueue"
@@ -106,6 +107,10 @@ func Job(args ...any) error {
 		ctx, cancel := context.WithTimeout(Ctx, duration)
 		cmd := exec.CommandContext(ctx, command, args...)
 		cmd.Dir = project.Cwd
+		// to ensure the sigint sigterm does not get passed to child processes,
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setpgid: true,
+		}
 		out, err := cmd.Output()
 		cancel()
 
@@ -116,6 +121,7 @@ func Job(args ...any) error {
 		if ok {
 			buildTime := project.LastBuildStart
 			steps := project.StepResults
+			status := project.BuildStatus
 			description := "step ran successfully"
 			if err != nil {
 				description = err.Error()
@@ -130,6 +136,7 @@ func Job(args ...any) error {
 			ResultMap.Map[projectName] = JobState{
 				LastBuildStart: buildTime,
 				StepResults:    steps,
+				BuildStatus:    status,
 			}
 			ResultMap.Mu.Unlock()
 		} else {
@@ -146,6 +153,8 @@ func Job(args ...any) error {
 			ResultMap.Map[projectName] = obj
 			ResultMap.Mu.Unlock()
 			break
+		} else {
+			fmt.Printf("step %v done\n", step)
 		}
 	}
 	ResultMap.Mu.RLock()
@@ -174,14 +183,14 @@ func ConfigParser(fileLocation string) (Doc, error) {
 
 }
 
-func ServerInit(configlocation string, l *log.Logger) error {
+func ServerInit(configlocation string, l *log.Logger, wg *sync.WaitGroup) error {
 	conf, err := ConfigParser(configlocation)
 	if err != nil {
 		return err
 	}
 	ServerConf = conf
 	Queues = make(jobqueue.QueueMap, 0)
-	for projectName, _ := range ServerConf.Project {
+	for projectName := range ServerConf.Project {
 		jg := jobqueue.NewJobQueue(projectName, make(chan jobqueue.Job, 25), 1)
 		err = Queues.Register(jg)
 		if err != nil {
@@ -189,7 +198,7 @@ func ServerInit(configlocation string, l *log.Logger) error {
 		}
 
 	}
-	Queues.StartAll(l)
+	Queues.StartAll(l, wg)
 	ResultMap = &ResultSyncMap{
 		Map: make(map[string]JobState),
 	}
