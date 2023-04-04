@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"syscall"
 	"time"
 
 	"ghhooks.com/hook/jobqueue"
@@ -106,6 +107,10 @@ func Job(args ...any) error {
 		ctx, cancel := context.WithTimeout(Ctx, duration)
 		cmd := exec.CommandContext(ctx, command, args...)
 		cmd.Dir = project.Cwd
+		// to ensure the sigint sigterm does not get passed to child processes,
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setpgid: true,
+		}
 		out, err := cmd.Output()
 		cancel()
 
@@ -185,7 +190,7 @@ func ServerInit(configlocation string, l *log.Logger, wg *sync.WaitGroup) error 
 	}
 	ServerConf = conf
 	Queues = make(jobqueue.QueueMap, 0)
-	for projectName, _ := range ServerConf.Project {
+	for projectName := range ServerConf.Project {
 		jg := jobqueue.NewJobQueue(projectName, make(chan jobqueue.Job, 25), 1)
 		err = Queues.Register(jg)
 		if err != nil {

@@ -57,8 +57,8 @@ func main() {
 		sigc := make(chan os.Signal, 1)
 		signal.Notify(sigc, os.Interrupt)
 		<-sigc
-		fmt.Println("gracefully shutting down")
-		// core.Queues.DrainAll()
+		fmt.Printf("\ngracefully shutting down\n")
+		core.Queues.DrainAll()
 
 		if err := srv.Shutdown(context.Background()); err != nil {
 			l.Printf("HTTP server shurdown error: %v\n", err)
@@ -71,7 +71,6 @@ func main() {
 	}
 
 	<-httpServerCloseChan
-	core.Queues.DrainAll()
 	wg.Wait()
 
 	fmt.Println("done")

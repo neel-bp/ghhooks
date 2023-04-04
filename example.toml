@@ -2,12 +2,12 @@
 
 branch = "master"
 secret = "xxx"
-cwd = 'c:\games'
+cwd = '/home/neelu/experiments'
 steps = [
-    ["goprint.exe","start"],
-    ["gosleep.exe","2"],
-    ["goprint.exe","mid"],
-    ["gosleep.exe","3"],
-    ["goprint.exe","end"]
+    ["echo","start"],
+    ["sleep","2"],
+    ["echo","mid"],
+    ["sleep","10"],
+    ["echo","end"]
 ]
 stepTimeout = 600
