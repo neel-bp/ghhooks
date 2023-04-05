@@ -10,6 +10,7 @@ import (
 	"ghhooks.com/hook/core"
 	"ghhooks.com/hook/jobqueue"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 // DONE: verify signature before accepting webhook
@@ -24,6 +25,26 @@ import (
 // TODO: blocking build run
 // DONE: html page for status
 // TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
+// TODO: update progressbar using websockets,
+// TODO: individual step results on statuspage
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+type StatusResponse struct {
+	core.JobState
+	ProjectName    string  `json:"projectName"`
+	DateTimeString string  `json:"dateTimeString"`
+	Coverage       float64 `json:"coverage"`
+}
+
+type WebsocketResponse struct {
+	core.JobState
+	Coverage    float64 `json:"coverage"`
+	ProjectName string  `json:"projectName"`
+}
 
 func WebHookListener(w http.ResponseWriter, r *http.Request) {
 
@@ -157,7 +178,7 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	result.Coverage = float64(successfullSteps * 100 / totalSteps)
+	coverage := float64(successfullSteps * 100 / totalSteps)
 
 	format := r.URL.Query().Get("format")
 
@@ -166,14 +187,69 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templateResponse := core.StatusResponse{
+	templateResponse := StatusResponse{
 		JobState:       result,
 		ProjectName:    projectID,
 		DateTimeString: result.LastBuildStart.Format(time.RFC3339),
+		Coverage:       coverage,
 	}
 
 	tmpl := template.Must(template.ParseFiles("statuspage.html"))
 	tmpl.Execute(w, templateResponse)
+
+}
+
+func LiveStatusUpdate(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	projectID, ok := vars["project"]
+	if !ok {
+		Respond(w, 400, map[string]interface{}{
+			"error": "no vars found",
+		})
+		return
+	}
+
+	project, ok := core.ServerConf.Project[projectID]
+	if !ok {
+		Respond(w, 400, map[string]interface{}{
+			"error": "no project found with given project name",
+		})
+		return
+	}
+
+	totalSteps := len(project.Steps)
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		Respond(w, 500, map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+	defer conn.Close()
+
+	for jobState := range core.LiveResultUpdates[projectID] {
+
+		var successfullSteps int
+		for _, v := range jobState.StepResults {
+			if v.Error == nil {
+				successfullSteps = successfullSteps + 1
+			}
+		}
+
+		coverage := float64(successfullSteps * 100 / totalSteps)
+
+		res := WebsocketResponse{
+			JobState:    jobState,
+			ProjectName: projectID,
+			Coverage:    coverage,
+		}
+		err := conn.WriteJSON(res)
+		if err != nil {
+			break
+		}
+	}
 
 }
 
@@ -182,4 +258,6 @@ func RouterInit(r *mux.Router) {
 	r.HandleFunc("/{project}/", WebHookListener).Methods("POST")
 	r.HandleFunc("/{project}/status", BuildStatus).Methods("GET")
 	r.HandleFunc("/{project}/status/", BuildStatus).Methods("GET")
+	r.HandleFunc("/{project}/livestatus", LiveStatusUpdate)
+	r.HandleFunc("/{project}/livestatus/", LiveStatusUpdate)
 }

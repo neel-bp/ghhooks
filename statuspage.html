@@ -14,13 +14,13 @@
       <div class="box has-text-centered neelu-box">
         <h1 class="title is-1">Build Status</h1>
         <h3 class="subtitle is-5" id="lastBuildStart">{{.DateTimeString}}</h3>
-        <p class="subtitle">{{.BuildStatus}}
-          <br>{{.Coverage}}%
+        <p class="subtitle"><span id="buildstatus">{{.BuildStatus}}</span>
+          <br><span id="coverage">{{.Coverage}}%</span>
         </p>
       </div>
       <div class="columns is-centered">
         <div class="column is-two-thirds">
-          <progress class="progress is-large" value="{{.Coverage}}" max="100">
+          <progress class="progress is-large" id="localprogressbar" value="{{.Coverage}}" max="100">
             {{.Coverage}}%
           </progress>
         </div>
@@ -56,27 +56,47 @@
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
     minutes = minutes < 10 ? '0' + minutes : minutes;
-    
+
     var month = date.getMonth() + 1;
     var day = date.getDate();
     var year = date.getFullYear();
-    if(month <= 9) {
-      month = "0"+month.toString();
+    if (month <= 9) {
+      month = "0" + month.toString();
     }
-    if(day <= 9) {
-      day = "0"+day.toString();
+    if (day <= 9) {
+      day = "0" + day.toString();
     }
-    
-    var strTime = year + "-"+ month + "-" + day +" "+ hours + ':' + minutes + ' ' + ampm;
+
+    var strTime = year + "-" + month + "-" + day + " " + hours + ':' + minutes + ' ' + ampm;
     return strTime;
   }
 
   var lastBuildStart = document.getElementById("lastBuildStart");
+  var buildstatus = document.getElementById("buildstatus");
+  var coverage = document.getElementById("coverage");
+  var localprogressbar = document.getElementById("localprogressbar");
   var time = formatAMPM(lastBuildStart.innerHTML);
 
   lastBuildStart.innerHTML = time;
 
-  
+  var socket = new WebSocket("ws://localhost:4444/vvfrontend/livestatus")
+
+  socket.onmessage = function (message) {
+    if (message.data != null) {
+      var event = JSON.parse(message.data);
+      // console.log(message.data);
+      lastBuildStart.innerHTML = formatAMPM(event.lastBuildStart);
+      buildstatus.innerHTML = event.buildStatus;
+      coverage.innerHTML = event.coverage + "%";
+      localprogressbar.innerHTML = event.coverage + "%";
+      localprogressbar.setAttribute("value", event.coverage);
+      buildstatus.innerHTML = event.buildStatus;
+
+      if (event.coverage == 100) {
+        buildstatus.innerHTML = "success"
+      }
+    }
+  }
 
 </script>
 

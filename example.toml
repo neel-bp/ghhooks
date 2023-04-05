@@ -2,12 +2,17 @@
 
 branch = "master"
 secret = "xxx"
-cwd = '/home/neelu/experiments'
+cwd = 'c:\games'
 steps = [
-    ["echo","start"],
-    ["sleep","2"],
-    ["echo","mid"],
-    ["sleep","10"],
-    ["echo","end"]
+    ["goprint","start"],
+    ["gosleep","2"],
+    ["goprint","mid"],
+    ["gosleep","5"],
+    ["goprint","end"],
+    ["gosleep","1"],
+    ["gosleep","1"],
+    ["gosleep","1"],
+    ["gosleep","1"],
+    ["gosleep","1"],
 ]
 stepTimeout = 600
