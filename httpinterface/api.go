@@ -25,7 +25,7 @@ import (
 // TODO: blocking build run
 // DONE: html page for status
 // TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
-// TODO: update progressbar using websockets,
+// DONE: update progressbar using websockets,
 // TODO: individual step results on statuspage
 
 var upgrader = websocket.Upgrader{
