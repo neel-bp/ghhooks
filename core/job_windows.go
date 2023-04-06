@@ -44,7 +44,6 @@ type JobState struct {
 	BuildStatus    string    `json:"buildStatus"`
 }
 
-
 type ResultSyncMap struct {
 	Mu  sync.RWMutex
 	Map map[string]JobState
