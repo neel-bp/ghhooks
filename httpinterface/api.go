@@ -36,10 +36,10 @@ var upgrader = websocket.Upgrader{
 
 type StatusResponse struct {
 	core.JobState
-	ProjectName    string  `json:"projectName"`
-	DateTimeString string  `json:"dateTimeString"`
-	Coverage       float64 `json:"coverage"`
-	WebSocketRoute string  `json:"websocketRoute"`
+	ProjectName    string       `json:"projectName"`
+	DateTimeString string       `json:"dateTimeString"`
+	Coverage       float64      `json:"coverage"`
+	WebSocketRoute template.URL `json:"websocketRoute"`
 }
 
 type WebsocketResponse struct {
@@ -194,7 +194,7 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		ProjectName:    projectID,
 		DateTimeString: result.LastBuildStart.Format(time.RFC3339),
 		Coverage:       coverage,
-		WebSocketRoute: fmt.Sprintf(`ws://%s/%s/livestatus`, r.Host, projectID),
+		WebSocketRoute: template.URL(fmt.Sprintf("ws://%s/%s/livestatus", r.Host, projectID)),
 	}
 
 	tmpl := template.Must(template.ParseFiles("statuspage.html"))

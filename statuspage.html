@@ -79,7 +79,7 @@
 
   lastBuildStart.innerHTML = time;
 
-  var socket = new WebSocket("{{.WebSocketRoute}}")
+  var socket = new WebSocket({{.WebSocketRoute}});
 
   socket.onmessage = function (message) {
     if (message.data != null) {
