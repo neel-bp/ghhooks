@@ -79,8 +79,7 @@
 
   lastBuildStart.innerHTML = time;
 
-  // hardcoded url need to change later,
-  var socket = new WebSocket("ws://localhost:4444/vvfrontend/livestatus")
+  var socket = new WebSocket("{{.WebSocketRoute}}")
 
   socket.onmessage = function (message) {
     if (message.data != null) {
