@@ -7,7 +7,12 @@ steps = [
     ["echo","start"],
     ["sleep","2"],
     ["echo","mid"],
-    ["sleep","10"],
-    ["echo","end"]
+    ["sleep","2"],
+    ["echo","end"],
+    ["sleep","1"],
+    ["sleep","1"],
+    ["sleep","1"],
+    ["sleep","1"],
+    ["sleep","1"],
 ]
 stepTimeout = 600
