@@ -30,6 +30,24 @@
   <section class="section">
     <div class="container">
       <h1 class="title is-2 has-text-centered">Steps</h1>
+      {{range $1,$e := .Steps}}
+      <div class="columns is-centered">
+        <div class="column is-two-thirds">
+          <details id="{{$1}}" class="box neelu-box">
+            <summary>
+              <strong>
+              {{.Command}}
+            </strong>
+            <span style="float: right;">{{.Status}}</span>
+            </summary>
+            <pre class="my-4">{{.CommandOutput}}</pre>
+            <blockquote>
+              {{.Description}}
+            </blockquote>
+          </details>
+        </div>
+      </div>
+      {{end}}
     </div>
   </section>
 </body>

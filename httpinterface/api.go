@@ -34,13 +34,26 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+const (
+	SUCCESS_MARK = "✓"
+	PENDING_MARK = "❍"
+	FAILED_MARK  = "✗"
+)
+
+type Step struct {
+	Command       string `json:"command"`
+	Status        string `json:"status"`
+	CommandOutput string `json:"commandOutput"`
+	Description   string `json:"description"`
+}
+
 type StatusResponse struct {
 	core.JobState
 	ProjectName    string       `json:"projectName"`
 	DateTimeString string       `json:"dateTimeString"`
 	Coverage       float64      `json:"coverage"`
 	WebSocketRoute template.URL `json:"websocketRoute"`
-	Steps          []string     `json:"steps"`
+	Steps          []Step       `json:"steps"`
 }
 
 type WebsocketResponse struct {
@@ -190,9 +203,25 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projectSteps := make([]string, 0)
-	for _, step := range project.Steps {
-		projectSteps = append(projectSteps, strings.Join(step, " "))
+	projectSteps := make([]Step, 0)
+	for i, step := range project.Steps {
+		step_ := Step{
+			Command: strings.Join(step, " "),
+			Status:  PENDING_MARK,
+		}
+		if i <= len(result.StepResults)-1 {
+			res := result.StepResults[i]
+			step_.CommandOutput = res.Output
+			step_.Description = res.Description
+			if res.Error != nil {
+				step_.Status = FAILED_MARK
+			} else {
+				step_.Status = SUCCESS_MARK
+			}
+		}
+
+		projectSteps = append(projectSteps, step_)
+
 	}
 
 	templateResponse := StatusResponse{
