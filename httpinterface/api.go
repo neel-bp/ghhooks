@@ -27,7 +27,8 @@ import (
 // DONE: html page for status
 // TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
 // DONE: update progressbar using websockets,
-// TODO: individual step results on statuspage
+// DONE: individual step results on statuspage
+// TODO: investigate what happens if websocket events come faster than the time it takes for event to process
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,

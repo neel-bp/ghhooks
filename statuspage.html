@@ -33,12 +33,10 @@
       {{range $1,$e := .Steps}}
       <div class="columns is-centered">
         <div class="column is-two-thirds">
-          <details id="{{$1}}" class="box neelu-box">
+          <details id="{{$1}}" class="steps box neelu-box">
             <summary>
-              <strong>
-              {{.Command}}
-            </strong>
-            <span style="float: right;">{{.Status}}</span>
+              <strong>{{.Command}}</strong>
+              <span style="float: right;">{{.Status}}</span>
             </summary>
             <pre class="my-4">{{.CommandOutput}}</pre>
             <blockquote>
@@ -71,6 +69,11 @@
 </style>
 
 <script>
+
+  const SUCCESS_MARK = "✓";
+  const FAILED_MARK = "✗"
+  const PENDING_MARK = "❍"
+
   function formatAMPM(dateString) {
     let date = new Date(dateString);
     var hours = date.getHours();
@@ -115,12 +118,41 @@
       localprogressbar.setAttribute("value", event.coverage);
       buildstatus.innerHTML = event.buildStatus;
 
+      // on build start flush everything steps
+      if (event.stepResults != null && event.stepResults.length <= 1) {
+        var allDetails = document.getElementsByClassName("steps");
+        for (const item of allDetails) {
+          item.getElementsByTagName("span")[0].innerHTML = PENDING_MARK;
+          item.getElementsByTagName("pre")[0].innerHTML = "";
+          item.getElementsByTagName("blockquote")[0].innerHTML = "";
+        }
+      }
+
+      event.stepResults.forEach((element, i) => {
+
+        var details = document.getElementById(i.toString());
+        var stepStatus = details.getElementsByTagName("span");
+        var commandOutput = details.getElementsByTagName("pre");
+        var description = details.getElementsByTagName("blockquote");
+
+
+
+        if (element.error === null) {
+          stepStatus[0].innerHTML = SUCCESS_MARK;
+        } else if (element.error != null) {
+          stepStatus[0].innerHTML = FAILED_MARK;
+        }
+        commandOutput[0].innerHTML = element.output;
+        description[0].innerHTML = element.description;
+
+
+      });
       if (event.coverage == 100) {
         buildstatus.innerHTML = "success"
       }
     }
   }
-
+  //# sourceURL=statuspage
 </script>
 
 </html>
