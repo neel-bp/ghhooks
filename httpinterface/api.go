@@ -155,6 +155,8 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 }
 
 func BuildStatus(w http.ResponseWriter, r *http.Request) {
+	//NOTE: to debug script on statuspage add //# sourceURL=statuspage at end of script above closing tag
+
 	vars := mux.Vars(r)
 	projectID, ok := vars["project"]
 	if !ok {
@@ -240,6 +242,7 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func LiveStatusUpdate(w http.ResponseWriter, r *http.Request) {
+	//NOTE: to debug script on statuspage add //# sourceURL=statuspage at end of script above closing tag
 
 	vars := mux.Vars(r)
 	projectID, ok := vars["project"]
