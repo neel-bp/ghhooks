@@ -40,6 +40,7 @@ type StatusResponse struct {
 	DateTimeString string       `json:"dateTimeString"`
 	Coverage       float64      `json:"coverage"`
 	WebSocketRoute template.URL `json:"websocketRoute"`
+	Steps          []string     `json:"steps"`
 }
 
 type WebsocketResponse struct {
@@ -189,12 +190,18 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projectSteps := make([]string, 0)
+	for _, step := range project.Steps {
+		projectSteps = append(projectSteps, strings.Join(step, " "))
+	}
+
 	templateResponse := StatusResponse{
 		JobState:       result,
 		ProjectName:    projectID,
 		DateTimeString: result.LastBuildStart.Format(time.RFC3339),
 		Coverage:       coverage,
 		WebSocketRoute: template.URL(fmt.Sprintf("ws://%s/%s/livestatus", r.Host, projectID)),
+		Steps:          projectSteps,
 	}
 
 	tmpl := template.Must(template.ParseFiles("statuspage.html"))

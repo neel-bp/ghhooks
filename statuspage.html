@@ -27,6 +27,11 @@
       </div>
     </div>
   </section>
+  <section class="section">
+    <div class="container">
+      <h1 class="title is-2 has-text-centered">Steps</h1>
+    </div>
+  </section>
 </body>
 
 <style>
@@ -79,7 +84,7 @@
 
   lastBuildStart.innerHTML = time;
 
-  var socket = new WebSocket({{.WebSocketRoute}});
+  var socket = new WebSocket("{{.WebSocketRoute}}");
 
   socket.onmessage = function (message) {
     if (message.data != null) {
