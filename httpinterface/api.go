@@ -27,11 +27,25 @@ import (
 // DONE: html page for status
 // TODO: maybe put password on status page to prevent from builds being cancelled by just anyone
 // DONE: update progressbar using websockets,
-// TODO: individual step results on statuspage
+// DONE: individual step results on statuspage
+// TODO: investigate what happens if websocket events come faster than the time it takes for event to process
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+}
+
+const (
+	SUCCESS_MARK = "✓"
+	PENDING_MARK = "❍"
+	FAILED_MARK  = "✗"
+)
+
+type Step struct {
+	Command       string `json:"command"`
+	Status        string `json:"status"`
+	CommandOutput string `json:"commandOutput"`
+	Description   string `json:"description"`
 }
 
 type StatusResponse struct {
@@ -40,6 +54,7 @@ type StatusResponse struct {
 	DateTimeString string       `json:"dateTimeString"`
 	Coverage       float64      `json:"coverage"`
 	WebSocketRoute template.URL `json:"websocketRoute"`
+	Steps          []Step       `json:"steps"`
 }
 
 type WebsocketResponse struct {
@@ -140,6 +155,8 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 }
 
 func BuildStatus(w http.ResponseWriter, r *http.Request) {
+	//NOTE: to debug script on statuspage add //# sourceURL=statuspage at end of script above closing tag
+
 	vars := mux.Vars(r)
 	projectID, ok := vars["project"]
 	if !ok {
@@ -189,12 +206,34 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projectSteps := make([]Step, 0)
+	for i, step := range project.Steps {
+		step_ := Step{
+			Command: strings.Join(step, " "),
+			Status:  PENDING_MARK,
+		}
+		if i <= len(result.StepResults)-1 {
+			res := result.StepResults[i]
+			step_.CommandOutput = res.Output
+			step_.Description = res.Description
+			if res.Error != nil {
+				step_.Status = FAILED_MARK
+			} else {
+				step_.Status = SUCCESS_MARK
+			}
+		}
+
+		projectSteps = append(projectSteps, step_)
+
+	}
+
 	templateResponse := StatusResponse{
 		JobState:       result,
 		ProjectName:    projectID,
 		DateTimeString: result.LastBuildStart.Format(time.RFC3339),
 		Coverage:       coverage,
 		WebSocketRoute: template.URL(fmt.Sprintf("ws://%s/%s/livestatus", r.Host, projectID)),
+		Steps:          projectSteps,
 	}
 
 	tmpl := template.Must(template.ParseFiles("statuspage.html"))
@@ -203,6 +242,7 @@ func BuildStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func LiveStatusUpdate(w http.ResponseWriter, r *http.Request) {
+	//NOTE: to debug script on statuspage add //# sourceURL=statuspage at end of script above closing tag
 
 	vars := mux.Vars(r)
 	projectID, ok := vars["project"]

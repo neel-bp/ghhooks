@@ -6,13 +6,10 @@ cwd = '/home/neelu/experiments'
 steps = [
     ["echo","start"],
     ["sleep","2"],
-    ["echo","mid"],
+    ["git","--help"],
     ["sleep","2"],
-    ["echo","end"],
     ["sleep","1"],
     ["sleep","1"],
-    ["sleep","1"],
-    ["sleep","1"],
-    ["sleep","1"],
+    
 ]
 stepTimeout = 600
