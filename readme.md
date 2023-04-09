@@ -1,17 +1,17 @@
-=======
+
 ghhooks
 =======
 
 A simple server that listens to github webhook push events
 and run commands/scripts as configured. 
 
--------
+
 Usecase
 -------
 It can be used to update services/websites/other-servers
 running on machine on code change, automatically
 
---------
+
 Features
 --------
 * run builds in a queue manner to not overlap multiple builds
@@ -29,9 +29,8 @@ Features
 * everything is saved in memory (status reports for build (only last build status is saved))
 
 
-----
-TODO
-----
+
+**TODO**
 
 * Proxy server that sends event to all configured agents which would run builds on projects
     on machines that they are running on. (A website/service can be behind a load balancer and 
