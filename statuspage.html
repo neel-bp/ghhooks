@@ -107,10 +107,26 @@
 
   var socket = new WebSocket("{{.WebSocketRoute}}");
 
+  socket.onopen = function (event) {
+    console.log("on open");
+    console.log(event);
+  }
+
+  socket.onclose = function(event) {
+    console.log("on close");
+    console.log(event);
+  }
+
+  socket.onerror = function(event) {
+    console.log("on error");
+    console.log(event);
+  }
+
+
   socket.onmessage = function (message) {
     if (message.data != null) {
       var event = JSON.parse(message.data);
-      // console.log(message.data);
+      console.log(message.data);
       lastBuildStart.innerHTML = formatAMPM(event.lastBuildStart);
       buildstatus.innerHTML = event.buildStatus;
       coverage.innerHTML = event.coverage + "%";
