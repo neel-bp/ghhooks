@@ -52,6 +52,9 @@ const (
 )
 
 // GLobals
+// values without mutex are supposed to be read only,
+// or you are supposed to only play with channels etc, and not modify them.
+// TODO: remove globals and use use sort of restricted package to access them instead.
 var Queues jobqueue.QueueMap
 var ServerConf Doc
 var ResultMap *ResultSyncMap
