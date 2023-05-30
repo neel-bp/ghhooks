@@ -26,17 +26,21 @@ type JobQueue struct {
 	name              string
 	buffer            chan Job
 	concurrentWorkers uint64
+	l                 *log.Logger
+	wg                *sync.WaitGroup
 }
 
 type QueueMap map[string]*JobQueue
 
 // ============ types ==================
 
-func NewJobQueue(pname string, pbuffer chan Job, pconcurrentWorkers uint64) *JobQueue {
+func NewJobQueue(pname string, pbuffer chan Job, pconcurrentWorkers uint64, l *log.Logger, wg *sync.WaitGroup) *JobQueue {
 	return &JobQueue{
 		name:              pname,
 		buffer:            pbuffer,
 		concurrentWorkers: pconcurrentWorkers,
+		l:                 l,
+		wg:                wg,
 	}
 }
 
@@ -49,24 +53,24 @@ func (jq *JobQueue) Enqueue(job Job) bool {
 	}
 }
 
-func (jq *JobQueue) startWorker(l *log.Logger, wg *sync.WaitGroup) {
+func (jq *JobQueue) startWorker() {
 	for j := range jq.buffer {
 		err := j.Action(j.Args...)
 		if err != nil {
-			l.Println(err)
+			jq.l.Println(err)
 		}
-		l.Println("job done")
+		jq.l.Println("job done")
 	}
-	wg.Done()
+	jq.wg.Done()
 }
 
-func (jq *JobQueue) StartWorkers(l *log.Logger, wg *sync.WaitGroup) {
+func (jq *JobQueue) StartWorkers() {
 	if jq.concurrentWorkers == 0 {
 		jq.concurrentWorkers = 1
 	}
 	for i := 0; i < int(jq.concurrentWorkers); i++ {
-		wg.Add(1)
-		go jq.startWorker(l, wg)
+		jq.wg.Add(1)
+		go jq.startWorker()
 	}
 }
 
@@ -85,9 +89,9 @@ func (q *QueueMap) Register(jq *JobQueue) error {
 	return nil
 }
 
-func (q *QueueMap) StartAll(l *log.Logger, wg *sync.WaitGroup) {
+func (q *QueueMap) StartAll() {
 	for k := range *q {
-		(*q)[k].StartWorkers(l, wg)
+		(*q)[k].StartWorkers()
 	}
 }
 
