@@ -1,0 +1,27 @@
+on:
+  release:
+
+name: Build Release
+jobs:
+  release-linux-amd64:
+    name: release linux/amd64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      uses: hashicorp/actions-go-build@main
+      with:
+        go_version: 1.18
+        os: linux
+        arch: amd64
+        product_name: gthooks
+        product_version: ${{github.ref_name}}
+        debug: true
+        instructions: |
+          go build -o "$BIN_PATH" -trimpath -buildvcs=false    
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: 
+        files: out/gthooks*
