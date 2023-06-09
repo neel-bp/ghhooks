@@ -28,6 +28,19 @@ Features
 * branch filtering (build will only run if code is pushed to configured branch)
 * everything is saved in memory (status reports for build (only last build status is saved))
 
+Usage
+-----
+
+```
+Usage of ./hook:
+  -addr string
+    	address/port pair (default ":4444")
+  -config string
+    	location of config file (default "example.toml")
+  -httplog
+    	log http requests (webhook push event and status request) (default true)
+```
+
 
 
 **TODO**
@@ -46,3 +59,4 @@ without an agent being setup alongside project that are supposed to update
 
 * cancel running build.
 * update commit status on github repo itself using github api (needs personal token configured by user)
+
