@@ -1,7 +1,6 @@
 package httpinterface
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -106,28 +105,12 @@ func WebHookListener(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var payload WebhookPayload
-	err = json.Unmarshal(bodyInBytes, &payload)
+	eventType := r.Header.Get("X-GitHub-Event")
+	err = VerifyEvent(eventType, bodyInBytes, project.Branch)
+
 	if err != nil {
-		Respond(w, 400, map[string]any{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	if payload.Ref == "" {
 		Respond(w, 400, map[string]interface{}{
-			"error": "invalid payload: cannot find ref inside given payload",
-		})
-		return
-	}
-
-	branchStringArr := strings.Split(payload.Ref, "/")
-	branchString := branchStringArr[len(branchStringArr)-1]
-
-	if project.Branch != branchString {
-		Respond(w, 200, map[string]interface{}{
-			"message": "request recieved but the push event is not for the configured branch",
+			"error": fmt.Sprintf("error: %v.", err),
 		})
 		return
 	}

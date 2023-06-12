@@ -169,3 +169,7 @@ type WebhookPayload struct {
 	Repository RepositoryT `json:"repository"`
 	Sender     SenderT     `json:"sender"`
 }
+
+type ReleaseWebhookPayload struct {
+	Action string `json:"action"`
+}
