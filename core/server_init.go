@@ -89,7 +89,7 @@ func ServerInit(configlocation string, l *log.Logger, wg *sync.WaitGroup) error 
 	Queues = make(jobqueue.QueueMap, 0)
 	LiveResultUpdates = make(map[string]chan JobState)
 	for projectName, project := range ServerConf.Project {
-		jg := jobqueue.NewJobQueue(projectName, make(chan jobqueue.Job, 25), 1)
+		jg := jobqueue.NewJobQueue(projectName, make(chan jobqueue.Job, 25), 1, l, wg)
 		err = Queues.Register(jg)
 		if err != nil {
 			return err
@@ -97,7 +97,7 @@ func ServerInit(configlocation string, l *log.Logger, wg *sync.WaitGroup) error 
 		LiveResultUpdates[projectName] = make(chan JobState, len(project.Steps)+1)
 
 	}
-	Queues.StartAll(l, wg)
+	Queues.StartAll()
 	ResultMap = &ResultSyncMap{
 		Map: make(map[string]JobState),
 	}
