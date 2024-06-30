@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-// TODO: write closing of queues with graceful shutdown
+// DONE: write closing of queues with graceful shutdown
 
 // errors ===============================
 
